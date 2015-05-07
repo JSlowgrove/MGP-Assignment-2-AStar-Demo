@@ -61,6 +61,9 @@ Game::Game(JAM_StateManager * stateManager, SDL_Renderer* renderer, int screenWi
 
 	/*initialise the target*/
 	target = JAM_Vec2(1.0f, 1.0f);
+
+	/*generate a new path*/
+	aStar->findNewPath((int)(robot->getPosition().x / squareScale), (int)(robot->getPosition().y / squareScale), (int)(target.x), (int)(target.y));
 }
 
 /**************************************************************************************************************/
@@ -123,6 +126,18 @@ bool Game::input()
 					/*test if targets are being placed*/
 					if (placementType == 1)
 					{
+						/*reset the square*/
+						delete mapSquares[(int)target.x][(int)target.y];
+						mapSquares[(int)target.x][(int)target.y]
+							= new MapSquare(
+							targetTexture,
+							target.x * (float)squareScale,
+							target.y * (float)squareScale,
+							(float)squareScale,
+							(float)squareScale,
+							false);
+						aStar->setSafeNode((int)target.x, (int)target.y);
+
 						/*set the new target*/
 						target = JAM_Vec2((float)((int)mouse.x / squareScale), (float)((int)mouse.y / squareScale));
 
@@ -131,9 +146,7 @@ bool Game::input()
 						mapSquares[(int)target.x][(int)target.y]
 							= new MapSquare(targetTexture, (float)target.x * squareScale, (float)target.y * squareScale,
 							(float)squareScale, (float)squareScale, false);
-
-						/*generate a new path*/
-						aStar->findNewPath((int)(robot->getPosition().x / squareScale), (int)(robot->getPosition().y / squareScale), (int)(target.x), (int)(target.y));
+						aStar->setSafeNode((int)target.x, (int)target.y);
 					}
 
 					/*test if walls are being placed*/
@@ -169,6 +182,8 @@ bool Game::input()
 							aStar->setDangerNode((int)mouse.x / squareScale, (int)mouse.y / squareScale);
 						}
 					}
+					/*generate a new path*/
+					aStar->findNewPath((int)(robot->getPosition().x / squareScale), (int)(robot->getPosition().y / squareScale), (int)(target.x), (int)(target.y));
 				}
 			}
 		}
